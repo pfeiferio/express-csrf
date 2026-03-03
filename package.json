@@ -1,0 +1,53 @@
+{
+  "name": "@pfeiferio/express-csrf",
+  "version": "1.0.0",
+  "description": "Short-lived, single-use CSRF tokens for Express — bound to browser context, built for multi-instance deployments. — a modern, dependency-free alternative to csurf",
+  "license": "MIT",
+  "author": "Pascal Pfeifer <pascal@pfeifer.zone>",
+  "sideEffects": false,
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": ["csrf", "express", "middleware", "security", "typescript", "csurf", "csurf-alternative"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pfeiferio/express-csrf.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pfeiferio/express-csrf/issues"
+  },
+  "homepage": "https://github.com/pfeiferio/express-csrf#readme",
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "express": "^5.2.1"
+  },
+  "scripts": {
+    "prepublishOnly": "npm test",
+    "build": "npm run clean && tsc",
+    "clean": "rm -rf dist",
+    "test": "npm run build && node --test",
+    "test:coverage": "npm run build && node --test --experimental-test-coverage --test-coverage-exclude='test/**'",
+    "test:coverage:c8": "npm run build && npx c8 node --test",
+    "test:coverage:lcov": "npm run build && npx c8 --src src node --enable-source-maps --test"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.3",
+    "typescript": "^5.9.3",
+    "@types/express": "^5.0.6"
+  }
+}
