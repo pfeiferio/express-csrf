@@ -53,6 +53,9 @@ npm install @pfeiferio/express-csrf
 
 ## Basic Usage
 
+The middleware reads the CSRF secret from `req.cookies` by default. If you use `cookie-parser`, register it before
+`csrfMiddleware`:
+
 ```ts
 import express from 'express'
 import cookieParser from 'cookie-parser'
@@ -100,6 +103,34 @@ Or in the request body as `_csrf`.
 
 > **Note:** Reading `_csrf` from the request body requires a body parser (e.g. `express.json()`) to be registered before
 > the CSRF middleware.
+
+---
+
+## Custom Cookie Reader
+
+By default, the middleware reads cookies from `req.cookies`. If you use a different cookie solution or want to read from
+signed cookies, provide a custom `cookieReader`:
+
+```ts
+// with signed cookies
+app.use(csrfMiddleware({
+  csrfSecretCookie: {
+    name: '__csrf',
+    cookieReader: (req) => req.signedCookies
+  }
+}))
+
+// without cookie-parser — parse manually
+app.use(csrfMiddleware({
+  csrfSecretCookie: {
+    name: '__csrf',
+    cookieReader: (req) => {
+      // your own cookie parsing logic
+      return parseCookies(req.headers.cookie ?? '')
+    }
+  }
+}))
+```
 
 ---
 
@@ -221,6 +252,7 @@ csrfMiddleware({
     domain: undefined,
     secure: true,
     sameSite: 'strict',               // 'strict' | 'lax' | 'none'
+    cookieReader: (req) => req.cookies ?? {},  // Custom cookie reader (default: req.cookies ?? {})
   },
   guard: {
     jsonOnly: true,                   // Require application/json Content-Type

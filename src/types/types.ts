@@ -2,6 +2,8 @@ import type {NextFunction, Request, RequestHandler, Response} from 'express'
 
 export type CsrfRequestPredicate = (req: Request) => boolean
 
+export type CsrfCookieReader = (req: Request) => Record<string, string>
+
 export interface CsrfMiddlewareOptions {
   csrfToken?: {
     ttl?: number
@@ -15,6 +17,7 @@ export interface CsrfMiddlewareOptions {
     domain?: string
     secure?: boolean
     sameSite?: 'strict' | 'lax' | 'none'
+    cookieReader?: CsrfCookieReader
   }
   guard?: {
     jsonOnly?: boolean
@@ -45,6 +48,7 @@ export interface ResolvedCsrfMiddlewareOptions {
     domain: string | undefined
     secure: boolean
     sameSite: 'strict' | 'lax' | 'none'
+    cookieReader: CsrfCookieReader
   }
   guard: {
     jsonOnly: boolean

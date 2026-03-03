@@ -27,6 +27,9 @@ export const csrfMiddlewareDefaults: ResolvedCsrfMiddlewareOptions = {
     domain: undefined,
     secure: true,
     sameSite: 'strict',
+    cookieReader: (req) =>
+      req.cookies
+      ?? {}
   },
   guard: {
     jsonOnly: true,
@@ -83,7 +86,7 @@ export const csrfMiddleware = (options: CsrfMiddlewareOptions): RequestHandler =
     const shouldSkipCreation = isExcluded || (resolvedOptions.guard.skipTokenCreation?.(req) ?? false)
     const shouldSkipValidation = isExcluded || (resolvedOptions.guard.skipValidation?.(req) ?? false)
 
-    let secretFromCookie: string | undefined = req.cookies[resolvedOptions.csrfSecretCookie.name]
+    let secretFromCookie: string | undefined = resolvedOptions.csrfSecretCookie.cookieReader(req)[resolvedOptions.csrfSecretCookie.name]
 
     req.csrf = {
       hasSecret: () => !!secretFromCookie,

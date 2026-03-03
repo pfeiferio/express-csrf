@@ -218,6 +218,19 @@ describe('validatedOptions()', () => {
       }, csrfMiddlewareDefaults), CsrfConfigError)
     })
 
+    test('throws if cookieReader is not a function', () => {
+      assert.throws(() => validatedOptions({
+        csrfSecretCookie: {cookieReader: 'not-a-function'}
+      }, csrfMiddlewareDefaults), CsrfConfigError)
+    })
+
+    test('accepts a valid cookieReader function', () => {
+      const cookieReader = (req) => req.cookies ?? {}
+      assert.doesNotThrow(() => validatedOptions({
+        csrfSecretCookie: {cookieReader}
+      }, csrfMiddlewareDefaults))
+    })
+
     test('throws if signal is missing aborted property', () => {
       assert.throws(() => validatedOptions({
         internals: {signal: {addEventListener: () => {}}}

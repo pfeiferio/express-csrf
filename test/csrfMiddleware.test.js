@@ -1,8 +1,6 @@
 import test, {describe} from 'node:test'
 import assert from 'node:assert/strict'
-import {csrfMiddleware, csrfMiddlewareDefaults} from '../dist/csrfMiddleware.js'
-import {defaultTokenLookup} from "../dist/utils.js";
-import {validateCsrfToken} from "../dist/token/validateCsrfToken.js";
+import {csrfMiddleware} from '../dist/csrfMiddleware.js'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -425,5 +423,65 @@ describe('csrfMiddleware', () => {
         {name: 'CsrfConfigError'}
       )
     })
+  })
+  test('uses custom cookieReader to read cookies', async () => {
+    const customCookies = {'__csrf': 'my-secret'}
+    const cookieReader = () => customCookies
+
+    const middleware = csrfMiddleware({
+      csrfSecretCookie: {
+        name: '__csrf',
+        cookieReader
+      }
+    })
+
+    const req = mockReq({method: 'GET'})
+    const res = mockRes()
+    const next = mockNext()
+
+    await middleware(req, res, next)
+
+    assert.equal(next.called(), true)
+    assert.equal(req.csrf.hasSecret(), true)
+    assert.ok(req.csrf.generateToken())
+  })
+  test('uses custom cookieReader to read secret cookie', async () => {
+    const customCookies = {'__csrf': 'my-secret'}
+    const cookieReader = () => customCookies
+
+    const middleware = csrfMiddleware({
+      csrfSecretCookie: {
+        name: '__csrf',
+        cookieReader
+      }
+    })
+
+    const req = mockReq({method: 'GET'})
+    const res = mockRes()
+    const next = mockNext()
+
+    await middleware(req, res, next)
+
+    assert.equal(next.called(), true)
+    assert.equal(req.csrf.hasSecret(), true)
+    assert.ok(req.csrf.generateToken())
+  })
+  test('falls back to req.cookies ?? {} when no cookieReader provided and req.cookies is null', async () => {
+    const middleware = csrfMiddleware({
+      csrfSecretCookie: {
+        name: '__csrf',
+      }
+    })
+
+    const req = mockReq({method: 'GET', cookies: null})
+    const res = mockRes()
+    const next = mockNext()
+
+    await middleware(req, res, next)
+
+    assert.equal(req.cookies, null)
+    assert.equal(next.called(), true)
+    assert.equal(req.csrf.hasSecret(), true)
+    assert.ok(req.csrf.generateToken())
   })
 })

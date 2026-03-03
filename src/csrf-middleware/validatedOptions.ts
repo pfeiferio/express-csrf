@@ -49,6 +49,7 @@ export const validatedOptions = (
   const skipTokenCreation = v('guard', 'skipTokenCreation')
   const skipValidation = v('guard', 'skipValidation')
   const signal = v('internals', 'signal')
+  const cookieReader = v('csrfSecretCookie', 'cookieReader')
 
   if (signal !== undefined && (
     typeof signal !== 'object' ||
@@ -58,6 +59,12 @@ export const validatedOptions = (
   )) {
     throw new CsrfConfigError(
       'Invalid csrfMiddleware configuration: "internals.signal" must be an AbortSignal'
+    )
+  }
+
+  if (typeof cookieReader !== 'function') {
+    throw new CsrfConfigError(
+      'Invalid csrfMiddleware configuration: "csrfSecretCookie.cookieReader" must be a function'
     )
   }
 
@@ -173,6 +180,7 @@ export const validatedOptions = (
       scopeResolver,
     },
     csrfSecretCookie: {
+      cookieReader,
       name: cookieName,
       path: cookiePath,
       ttl: cookieTtl,
