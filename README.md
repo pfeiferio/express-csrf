@@ -256,7 +256,7 @@ csrfMiddleware({
     cookieReader: (req) => req.cookies ?? {},  // Custom cookie reader (default: req.cookies ?? {})
   },
   guard: {
-    jsonOnly: true,                   // Require application/json Content-Type
+    jsonOnly: true,                   // Require application/json Content-Type (checked via raw header when no body parser is present)
     origin: false,                    // Expected Origin header value, or false to disable
     onTokenRejected: ...,             // Custom rejection handler
     exclude: (req) => boolean,

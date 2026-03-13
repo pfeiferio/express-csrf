@@ -127,6 +127,74 @@ test('invalid content type', async () => {
   assert.equal(result.reason, 'invalid_content_type')
 })
 
+test('jsonOnly: passes when req.is returns null but content-type header is application/json', async () => {
+  const req = {
+    ...createReq(),
+    headers: {'content-type': 'application/json', origin: 'http://localhost', 'user-agent': 'agent'},
+    is: () => null
+  }
+
+  const result = await validateCsrfToken(
+    createOptions({jsonOnly: true}),
+    req,
+    SECRET,
+    async () => true
+  )
+
+  assert.equal(result.reason, 'missing_token')
+})
+
+test('jsonOnly: passes when req.is returns null and content-type has charset param', async () => {
+  const req = {
+    ...createReq(),
+    headers: {'content-type': 'application/json; charset=utf-8', origin: 'http://localhost', 'user-agent': 'agent'},
+    is: () => null
+  }
+
+  const result = await validateCsrfToken(
+    createOptions({jsonOnly: true}),
+    req,
+    SECRET,
+    async () => true
+  )
+
+  assert.equal(result.reason, 'missing_token')
+})
+
+test('jsonOnly: fails when req.is returns null and content-type header is not json', async () => {
+  const req = {
+    ...createReq(),
+    headers: {'content-type': 'text/html', origin: 'http://localhost', 'user-agent': 'agent'},
+    is: () => null
+  }
+
+  const result = await validateCsrfToken(
+    createOptions({jsonOnly: true}),
+    req,
+    SECRET,
+    async () => true
+  )
+
+  assert.equal(result.reason, 'invalid_content_type')
+})
+
+test('jsonOnly: fails when req.is returns null and content-type header is absent', async () => {
+  const req = {
+    ...createReq(),
+    headers: {origin: 'http://localhost', 'user-agent': 'agent'},
+    is: () => null
+  }
+
+  const result = await validateCsrfToken(
+    createOptions({jsonOnly: true}),
+    req,
+    SECRET,
+    async () => true
+  )
+
+  assert.equal(result.reason, 'invalid_content_type')
+})
+
 test('missing token', async () => {
   const result = await validateCsrfToken(
     createOptions(),

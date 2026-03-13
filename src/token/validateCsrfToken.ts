@@ -29,8 +29,17 @@ export const validateCsrfToken = async (
   if (options.guard.origin && req.get('origin') !== options.guard.origin)
     return fail('origin_mismatch')
 
-  if (options.guard.jsonOnly && !req.is('application/json'))
-    return fail('invalid_content_type')
+  if (options.guard.jsonOnly) {
+    const isJson = req.is('application/json')
+      ?? req.headers['content-type']
+        ?.split(';')[0]
+        ?.toLowerCase()
+      === 'application/json'
+
+    if (!isJson) {
+      return fail('invalid_content_type')
+    }
+  }
 
   try {
     const token = options.csrfToken.lookup(req)
