@@ -23,11 +23,12 @@ export const createUseCsrfToken = (
   if (options.internals.cleanupProcess) options.internals.cleanupProcess(context, options)
   runInternalCleanup(context, options)
 
-  return (async (token) => {
+  return (async (token, peekOnly = false) => {
     const tokenHash = sha256(token)
     const tokenInUse = localUsedStack[tokenHash] ?? false
     if (tokenInUse) return false
     if (await options.internals.store?.has(tokenHash)) return false
+    if (peekOnly) return true
     await options.internals.store?.set(tokenHash, options.csrfToken.ttl)
     localUsedStack[tokenHash] = true
     const stackId = calculateExpireStackId(Date.now())

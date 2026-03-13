@@ -99,7 +99,9 @@ test('missing secret', async () => {
     createOptions(),
     createReq(),
     undefined,
-    async () => true
+    async () => true,
+    new Set(),
+    false
   )
 
   assert.equal(result.reason, 'missing_secret')
@@ -110,7 +112,9 @@ test('origin mismatch', async () => {
     createOptions({origin: 'http://expected'}),
     createReq({origin: 'http://wrong'}),
     SECRET,
-    async () => true
+    async () => true,
+    new Set(),
+    false
   )
 
   assert.equal(result.reason, 'origin_mismatch')
@@ -121,7 +125,9 @@ test('invalid content type', async () => {
     createOptions({jsonOnly: true}),
     createReq({contentType: 'text/plain'}),
     SECRET,
-    async () => true
+    async () => true,
+    new Set(),
+    false
   )
 
   assert.equal(result.reason, 'invalid_content_type')
@@ -138,7 +144,9 @@ test('jsonOnly: passes when req.is returns null but content-type header is appli
     createOptions({jsonOnly: true}),
     req,
     SECRET,
-    async () => true
+    async () => true,
+    new Set(),
+    false
   )
 
   assert.equal(result.reason, 'missing_token')
@@ -155,7 +163,9 @@ test('jsonOnly: passes when req.is returns null and content-type has charset par
     createOptions({jsonOnly: true}),
     req,
     SECRET,
-    async () => true
+    async () => true,
+    new Set(),
+    false
   )
 
   assert.equal(result.reason, 'missing_token')
@@ -172,7 +182,9 @@ test('jsonOnly: fails when req.is returns null and content-type header is not js
     createOptions({jsonOnly: true}),
     req,
     SECRET,
-    async () => true
+    async () => true,
+    new Set(),
+    false
   )
 
   assert.equal(result.reason, 'invalid_content_type')
@@ -189,7 +201,9 @@ test('jsonOnly: fails when req.is returns null and content-type header is absent
     createOptions({jsonOnly: true}),
     req,
     SECRET,
-    async () => true
+    async () => true,
+    new Set(),
+    false
   )
 
   assert.equal(result.reason, 'invalid_content_type')
@@ -200,7 +214,9 @@ test('missing token', async () => {
     createOptions(),
     createReq(),
     SECRET,
-    async () => true
+    async () => true,
+    new Set(),
+    false
   )
 
   assert.equal(result.reason, 'missing_token')
@@ -215,7 +231,9 @@ test('invalid structure', async () => {
     options,
     createReq(),
     SECRET,
-    async () => true
+    async () => true,
+    new Set(),
+    false
   )
 
   assert.equal(result.reason, 'invalid_structure')
@@ -230,7 +248,9 @@ test('expired token', async () => {
       createOptions({lookup: () => token}),
       req,
       SECRET,
-      async () => true
+      async () => true,
+      new Set(),
+      false
     )
 
     assert.equal(result.reason, 'expired')
@@ -258,7 +278,9 @@ test('browser signature mismatch', async () => {
       createOptions({lookup: () => token}),
       req,
       SECRET,
-      async () => true
+      async () => true,
+      new Set(),
+      false
     )
 
     assert.equal(result.reason, 'browser_signature_mismatch')
@@ -284,7 +306,9 @@ test('invalid signature', async () => {
       createOptions({lookup: () => broken}),
       req,
       SECRET,
-      async () => true
+      async () => true,
+      new Set(),
+      false
     )
 
     assert.equal(result.reason, 'invalid_signature')
@@ -300,7 +324,9 @@ test('token already used', async () => {
       createOptions({lookup: () => token}),
       req,
       SECRET,
-      async () => false
+      async () => false,
+      new Set(),
+      false
     )
 
     assert.equal(result.reason, 'token_already_used')
@@ -316,7 +342,9 @@ test('valid token', async () => {
       createOptions({lookup: () => token}),
       req,
       SECRET,
-      async () => true
+      async () => true,
+      new Set(),
+      false
     )
 
     assert.equal(result.valid, true)
@@ -343,7 +371,9 @@ test('returns unknown when internal error occurs', async () => {
     options,
     createReq(),
     SECRET,
-    async () => true
+    async () => true,
+    new Set(),
+    false
   )
 
   assert.equal(result.valid, false)
@@ -373,7 +403,9 @@ test('invalid structure when expires is not a number', async () => {
     createOptions({lookup: () => token}),
     req,
     SECRET,
-    async () => true
+    async () => true,
+    new Set(),
+    false
   )
 
   assert.equal(result.reason, 'invalid_structure')

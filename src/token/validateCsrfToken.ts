@@ -16,7 +16,9 @@ export const validateCsrfToken = async (
   options: ResolvedCsrfMiddlewareOptions,
   req: Request,
   secret: string | undefined,
-  useCsrfToken: UseCsrfToken
+  useCsrfToken: UseCsrfToken,
+  requestScopedTokens: Set<string>,
+  peekOnly: boolean = false
 ): Promise<CsrfValidationResult> => {
 
   const fail = (reason: CsrfValidationFailReason): CsrfValidationResult => {
@@ -78,9 +80,10 @@ export const validateCsrfToken = async (
     )
     if (!isValidToken) return fail('invalid_signature')
 
-    const used = await useCsrfToken(`${scope}:${token}`)
-    if (!used) return fail('token_already_used')
+    const unused = await useCsrfToken(`${scope}:${token}`, peekOnly)
+    if (!unused) return fail('token_already_used')
 
+    requestScopedTokens.add(token)
     return {valid: true}
   } catch (e) {
     if (options.internals.debug) options.internals.debug('csrf validation error', e)

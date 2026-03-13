@@ -536,10 +536,7 @@ describe('csrfMiddleware', () => {
     })
 
     test('returns false for an already used token (replay)', async () => {
-      const middleware = csrfMiddleware({
-        ...defaultOptions,
-        guard: {skipValidation: () => true}
-      })
+      const middleware = csrfMiddleware(defaultOptions)
 
       const getReq = mockReq()
       const getRes = mockRes()
@@ -551,15 +548,17 @@ describe('csrfMiddleware', () => {
       const makePostReq = () => mockReq({
         method: 'POST',
         cookies: {'__csrf': secret},
+        headers: {'x-csrf-token': token},
         is: (type) => type === 'application/json'
       })
 
-      // First call — consumes the token
+      // First request — middleware consumes the token
       const firstReq = makePostReq()
       await middleware(firstReq, mockRes(), mockNext())
+      // isValidToken sees it in requestScopedTokens (same request) → true
       assert.equal(await firstReq.csrf.isValidToken(token), true)
 
-      // Replay attempt — token already used
+      // Replay attempt — isValidToken peeks, token already consumed globally → false
       const replayReq = makePostReq()
       await middleware(replayReq, mockRes(), mockNext())
       assert.equal(await replayReq.csrf.isValidToken(token), false)

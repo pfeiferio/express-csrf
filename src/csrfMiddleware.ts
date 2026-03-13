@@ -82,6 +82,7 @@ export const csrfMiddleware = (options: CsrfMiddlewareOptions): RequestHandler =
    */
   return async (req, res, next) => {
 
+    const requestScopedTokens = new Set<string>()
     const isExcluded = resolvedOptions.guard.exclude?.(req) ?? false
     const shouldSkipCreation = isExcluded || (resolvedOptions.guard.skipTokenCreation?.(req) ?? false)
     const shouldSkipValidation = isExcluded || (resolvedOptions.guard.skipValidation?.(req) ?? false)
@@ -97,8 +98,9 @@ export const csrfMiddleware = (options: CsrfMiddlewareOptions): RequestHandler =
       isTokenCreationSkipped: () => shouldSkipCreation,
       isValidationSkipped: () => shouldSkipValidation,
       isValidToken: async (token: string) => {
+        if (requestScopedTokens.has(token)) return true
         const optionsWithToken = {...resolvedOptions, csrfToken: {...resolvedOptions.csrfToken, lookup: () => token}}
-        const result = await validateCsrfToken(optionsWithToken, req, secretFromCookie, useCsrfToken)
+        const result = await validateCsrfToken(optionsWithToken, req, secretFromCookie, useCsrfToken, requestScopedTokens, true)
         return result.valid
       }
     }
@@ -130,7 +132,7 @@ export const csrfMiddleware = (options: CsrfMiddlewareOptions): RequestHandler =
       return next()
     }
 
-    const result = await validateCsrfToken(resolvedOptions, req, secretFromCookie, useCsrfToken)
+    const result = await validateCsrfToken(resolvedOptions, req, secretFromCookie, useCsrfToken, requestScopedTokens, false)
     if (!result.valid) {
       resolvedOptions.guard.onTokenRejected(req, res, next, result)
       return

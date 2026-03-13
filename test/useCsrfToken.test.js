@@ -39,6 +39,29 @@ describe('createUseCsrfToken()', () => {
 
   })
 
+  describe('peekOnly mode', () => {
+
+    test('returns true without consuming the token', async () => {
+      const use = createUseCsrfToken(makeOptions())
+      assert.equal(await use('token-a', true), true)
+      assert.equal(await use('token-a', true), true) // still unconsumed
+    })
+
+    test('token remains usable after peek', async () => {
+      const use = createUseCsrfToken(makeOptions())
+      await use('token-a', true)          // peek
+      assert.equal(await use('token-a'), true)   // consume
+      assert.equal(await use('token-a'), false)  // replay rejected
+    })
+
+    test('returns false for an already consumed token', async () => {
+      const use = createUseCsrfToken(makeOptions())
+      await use('token-a')               // consume
+      assert.equal(await use('token-a', true), false) // peek sees it as used
+    })
+
+  })
+
   describe('with external store', () => {
 
     const makeStore = () => {

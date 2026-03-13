@@ -89,7 +89,7 @@ export interface CleanupContext {
  *          True if the token was not used before and is now consumed,
  *          false if the token was already used.
  */
-export type UseCsrfToken = (token: string) => Promise<boolean>
+export type UseCsrfToken = (token: string, peekOnly?: boolean) => Promise<boolean>
 
 export interface CsrfStoreAdapter {
   has(key: string): Promise<boolean>
