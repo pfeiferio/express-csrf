@@ -484,4 +484,86 @@ describe('csrfMiddleware', () => {
     assert.equal(req.csrf.hasSecret(), true)
     assert.ok(req.csrf.generateToken())
   })
+
+  describe('req.csrf.isValidToken(token)', () => {
+
+    test('returns true for a valid token when validation is skipped', async () => {
+      // isValidToken(token) is designed for use with skipValidation — the
+      // middleware skips automatic validation so the caller can check manually.
+      const middleware = csrfMiddleware({
+        ...defaultOptions,
+        guard: {skipValidation: () => true}
+      })
+
+      const getReq = mockReq()
+      const getRes = mockRes()
+      await middleware(getReq, getRes, mockNext())
+
+      const secret = getRes.cookies['__csrf']
+      const token = getRes.locals.csrfToken
+
+      const postReq = mockReq({
+        method: 'POST',
+        cookies: {'__csrf': secret},
+        is: (type) => type === 'application/json'
+      })
+      await middleware(postReq, mockRes(), mockNext())
+
+      assert.equal(await postReq.csrf.isValidToken(token), true)
+    })
+
+    test('returns false when no secret exists', async () => {
+      const middleware = csrfMiddleware(defaultOptions)
+      const req = mockReq({
+        method: 'POST',
+        is: (type) => type === 'application/json'
+      })
+      await middleware(req, mockRes(), mockNext())
+
+      assert.equal(await req.csrf.isValidToken('sometoken'), false)
+    })
+
+    test('returns false for an invalid token string', async () => {
+      const middleware = csrfMiddleware(defaultOptions)
+      const req = mockReq({
+        method: 'POST',
+        cookies: {'__csrf': 'somesecret'},
+        is: (type) => type === 'application/json'
+      })
+      await middleware(req, mockRes(), mockNext())
+
+      assert.equal(await req.csrf.isValidToken('invalid-token'), false)
+    })
+
+    test('returns false for an already used token (replay)', async () => {
+      const middleware = csrfMiddleware({
+        ...defaultOptions,
+        guard: {skipValidation: () => true}
+      })
+
+      const getReq = mockReq()
+      const getRes = mockRes()
+      await middleware(getReq, getRes, mockNext())
+
+      const secret = getRes.cookies['__csrf']
+      const token = getRes.locals.csrfToken
+
+      const makePostReq = () => mockReq({
+        method: 'POST',
+        cookies: {'__csrf': secret},
+        is: (type) => type === 'application/json'
+      })
+
+      // First call — consumes the token
+      const firstReq = makePostReq()
+      await middleware(firstReq, mockRes(), mockNext())
+      assert.equal(await firstReq.csrf.isValidToken(token), true)
+
+      // Replay attempt — token already used
+      const replayReq = makePostReq()
+      await middleware(replayReq, mockRes(), mockNext())
+      assert.equal(await replayReq.csrf.isValidToken(token), false)
+    })
+
+  })
 })

@@ -6,6 +6,7 @@ declare module "express-serve-static-core" {
       isExcluded(): boolean
       isTokenCreationSkipped(): boolean
       isValidationSkipped(): boolean
+      isValidToken(token: string): Promise<boolean>
     }
   }
 

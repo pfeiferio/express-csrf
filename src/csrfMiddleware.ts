@@ -95,7 +95,12 @@ export const csrfMiddleware = (options: CsrfMiddlewareOptions): RequestHandler =
         : false,
       isExcluded: () => isExcluded,
       isTokenCreationSkipped: () => shouldSkipCreation,
-      isValidationSkipped: () => shouldSkipValidation
+      isValidationSkipped: () => shouldSkipValidation,
+      isValidToken: async (token: string) => {
+        const optionsWithToken = {...resolvedOptions, csrfToken: {...resolvedOptions.csrfToken, lookup: () => token}}
+        const result = await validateCsrfToken(optionsWithToken, req, secretFromCookie, useCsrfToken)
+        return result.valid
+      }
     }
 
     if (isExcluded) return next()

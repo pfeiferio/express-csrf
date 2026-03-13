@@ -232,6 +232,7 @@ req.csrf.generateToken()          // string | false — generate a new token on 
 req.csrf.isExcluded()             // boolean
 req.csrf.isTokenCreationSkipped() // boolean
 req.csrf.isValidationSkipped()    // boolean
+req.csrf.isValidToken(token)      // Promise<boolean> — manually validate a given CSRF token string
 ```
 
 ---
